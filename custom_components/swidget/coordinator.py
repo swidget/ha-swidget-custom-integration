@@ -1,15 +1,14 @@
-"""Component to embed TP-Link smart home devices."""
+"""Swidget Device Coordinator."""
 from __future__ import annotations
 
 from datetime import timedelta
 import logging
 
-from .swidgetclient.device import SwidgetDevice
-from .swidgetclient.exceptions import SwidgetException
+from swidget.swidgetdevice import SwidgetDevice
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.debounce import Debouncer
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ class SwidgetDataUpdateCoordinator(DataUpdateCoordinator):
         hass: HomeAssistant,
         device: SwidgetDevice,
     ) -> None:
-        """Initialize DataUpdateCoordinator to gather data for specific device"""
+        """Initialize DataUpdateCoordinator to gather data for specific device."""
         self.device = device
         update_interval = timedelta(seconds=0.5)
         super().__init__(

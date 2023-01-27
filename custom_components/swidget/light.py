@@ -1,21 +1,16 @@
-"""Support for TPLink lights."""
+"""Support for Swidget lights."""
 from __future__ import annotations
 
-from collections.abc import Sequence
 import logging
-from typing import Any, Final, cast
+from typing import Any, cast
 
-from .swidgetclient.device import SwidgetDevice
-from .swidgetclient.swidgetdimmer import SwidgetDimmer
+from swidget.swidgetdevice import SwidgetDevice
+from swidget.swidgetdimmer import SwidgetDimmer
 import voluptuous as vol
 
-from homeassistant.components.light import (
-    ATTR_BRIGHTNESS,
-    ColorMode,
-    LightEntity,
-)
+from homeassistant.components.light import ATTR_BRIGHTNESS, ColorMode, LightEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -32,17 +27,15 @@ SERVICE_SEQUENCE_EFFECT = "sequence_effect"
 BRIGHTNESS = "brightness"
 VAL = vol.Range(min=0, max=100)
 SERVICE_SWIDGET_SET_DEFAULT_BRIGHTNESS = "set_default_brightness"
-SWIDGET_SET_BRIGHTNESS_SCHEMA = cv.make_entity_service_schema(
-    {
-        BRIGHTNESS: VAL
-    }
-)
+SWIDGET_SET_BRIGHTNESS_SCHEMA = cv.make_entity_service_schema({BRIGHTNESS: VAL})
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
+    """Set up light."""
     coordinator: SwidgetDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
     if coordinator.device.is_dimmer:
         async_add_entities(
@@ -55,8 +48,9 @@ async def async_setup_entry(
         "set_default_brightness",
     )
 
+
 class SwidgetSmartDimmer(CoordinatedSwidgetEntity, LightEntity):
-    """Representation of a TPLink Smart Bulb."""
+    """Representation of a Swidget Dimmer."""
 
     device: SwidgetDimmer
 
@@ -67,11 +61,8 @@ class SwidgetSmartDimmer(CoordinatedSwidgetEntity, LightEntity):
     ) -> None:
         """Initialize the switch."""
         super().__init__(device, coordinator)
-        # For backwards compat with pyHS100
         self._attr_name = "Dimmer"
-        self._attr_unique_id = (
-            f"{self.device}_dimmer"
-        )
+        self._attr_unique_id = f"{self.device}_dimmer"
 
     @async_refresh_after
     async def async_turn_on(self, **kwargs: Any) -> None:
@@ -81,13 +72,12 @@ class SwidgetSmartDimmer(CoordinatedSwidgetEntity, LightEntity):
         await self._async_turn_on_with_brightness(brightness)
 
     @async_refresh_after
-    async def _async_turn_on_with_brightness(
-        self, brightness: int | None) -> None:
+    async def _async_turn_on_with_brightness(self, brightness: int | None) -> None:
         # Fallback to adjusting brightness or turning the bulb on
         if brightness is not None:
             await self.device.set_brightness(brightness)
             return
-        await self.device.turn_on()  # type: ignore[arg-type]
+        await self.device.turn_on()
 
     @property
     def supported_color_modes(self) -> set[ColorMode | str] | None:
@@ -112,5 +102,6 @@ class SwidgetSmartDimmer(CoordinatedSwidgetEntity, LightEntity):
         return round((self.device.brightness * 255.0) / 100.0)
 
     async def set_default_brightness(self, **kwargs: Any) -> None:
+        """Set the default brightness of the light."""
         if BRIGHTNESS in kwargs:
             await self.device.set_default_brightness(kwargs[BRIGHTNESS])

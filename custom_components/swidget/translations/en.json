@@ -21,7 +21,8 @@
             },
             "pick_device": {
                 "data": {
-                    "device": "Device"
+                    "device": "Device",
+                    "token_name": "Token Name"
                 }
             },
             "user": {

@@ -1,12 +1,12 @@
+"""Support for Swidget sensors."""
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
+import logging
 from typing import cast
 
-from .swidgetclient.device import SwidgetDevice
+from swidget.swidgetdevice import SwidgetDevice
 
-from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -15,12 +15,10 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
-    CONCENTRATION_PARTS_PER_BILLION,
     CONCENTRATION_PARTS_PER_MILLION,
     PERCENTAGE,
     POWER_WATT,
-    PRESSURE_HPA,
+    PRESSURE_PA,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     TEMP_CELSIUS,
 )
@@ -28,9 +26,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import (
-    DOMAIN,
-)
+from .const import DOMAIN
 from .coordinator import SwidgetDataUpdateCoordinator
 from .entity import CoordinatedSwidgetEntity
 
@@ -43,6 +39,7 @@ class SwidgetSensorEntityDescription(SensorEntityDescription):
 
     emeter_attr: str | None = None
     precision: int | None = None
+
 
 SWIDGET_SENSORS: tuple[SwidgetSensorEntityDescription, ...] = (
     SwidgetSensorEntityDescription(
@@ -83,7 +80,7 @@ SWIDGET_SENSORS: tuple[SwidgetSensorEntityDescription, ...] = (
     ),
     SwidgetSensorEntityDescription(
         key="Pressure",
-        native_unit_of_measurement=PRESSURE_HPA,
+        native_unit_of_measurement=PRESSURE_PA,
         device_class=SensorDeviceClass.PRESSURE,
         state_class=SensorStateClass.MEASUREMENT,
         name="Air Pressure",
@@ -121,15 +118,16 @@ SWIDGET_SENSORS: tuple[SwidgetSensorEntityDescription, ...] = (
         key="Signal Strength",
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
-        entity_category = EntityCategory.DIAGNOSTIC,
+        entity_category=EntityCategory.DIAGNOSTIC,
         name="Signal Strength",
         emeter_attr="rssi",
     ),
 )
 
+
 def async_emeter_from_device(
     device: SwidgetDevice, description: SwidgetSensorEntityDescription
-) -> float | None:
+) -> float | str | None:
     """Map a sensor key to the device attribute."""
     if attr := description.emeter_attr:
         if (val := device.realtime_values.get(attr, None)) is None:
@@ -139,6 +137,7 @@ def async_emeter_from_device(
                 return "is_motion"
             return "is_no_motion"
         return round(cast(float, val), description.precision)
+    return None
 
 
 async def async_setup_entry(
@@ -164,7 +163,7 @@ async def async_setup_entry(
 
 
 class SwidgetSensor(CoordinatedSwidgetEntity, SensorEntity):
-    """Representation of a Swidget sensor"""
+    """Representation of a Swidget sensor."""
 
     entity_description: SwidgetSensorEntityDescription
 
@@ -177,9 +176,7 @@ class SwidgetSensor(CoordinatedSwidgetEntity, SensorEntity):
         """Initialize the switch."""
         super().__init__(device, coordinator)
         self.entity_description = description
-        self._attr_unique_id = (
-            f"{self.device}_{self.entity_description.key}"
-        )
+        self._attr_unique_id = f"{self.device}_{self.entity_description.key}"
 
     @property
     def name(self) -> str:
@@ -190,6 +187,6 @@ class SwidgetSensor(CoordinatedSwidgetEntity, SensorEntity):
         return f"{self.entity_description.name}"
 
     @property
-    def native_value(self) -> float | None:
+    def native_value(self) -> float | str | None:
         """Return the sensors state."""
         return async_emeter_from_device(self.device, self.entity_description)

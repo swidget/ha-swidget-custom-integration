@@ -1,27 +1,25 @@
 {
-    "domain": "swidget",
-    "name": "Swidget",
-    "config_flow": true,
-    "documentation": "https://github.com/michaelkkehoe/ha-swidget",
-    "issue_tracker": "https://github.com/michaelkkehoe/ha-swidgetissues",
-    "dependencies": ["network"],
-    "codeowners": ["@michaelkkehoe"],
-    "requirements": [ "ssdp" ],
-    "version": "0.0.2",
-    "iot_class": "local_polling",
-    "quality_scale": "platinum",
-    "ssdp": [
-      {
-        "st": "urn:swidget:pico:1",
-        "manufacturer": "Swidget"
-
-      }
-    ],
-    "dhcp": [
-        { "registered_devices": true },
-        {
-          "hostname": "swidget*",
-          "macaddress": "24A160*"
-        }
-    ]
+  "domain": "swidget",
+  "name": "Swidget",
+  "config_flow": true,
+  "documentation": "https://github.com/swidget/ha-swidget",
+  "issue_tracker": "https://github.com/swidget/ha-swidget",
+  "dependencies": ["network"],
+  "codeowners": ["@swidget"],
+  "requirements": ["python-swidget==0.0.24"],
+  "iot_class": "local_polling",
+  "quality_scale": "platinum",
+  "ssdp": [
+    {
+      "st": "urn:swidget:pico:1",
+      "manufacturer": "Swidget"
+    }
+  ],
+  "dhcp": [
+    { "registered_devices": true },
+    {
+      "hostname": "swidget*",
+      "macaddress": "24A160*"
+    }
+  ]
 }

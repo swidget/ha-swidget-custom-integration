@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable, Coroutine
 from typing import Any, TypeVar
 
-from .swidgetclient.device import SwidgetDevice
+from swidget.swidgetdevice import SwidgetDevice
 from typing_extensions import Concatenate, ParamSpec
 
 from homeassistant.helpers import device_registry as dr
@@ -19,8 +19,8 @@ _P = ParamSpec("_P")
 
 
 def async_refresh_after(
-    func: Callable[Concatenate[_T, _P], Awaitable[None]]  # type: ignore[misc]
-) -> Callable[Concatenate[_T, _P], Coroutine[Any, Any, None]]:  # type: ignore[misc]
+    func: Callable[Concatenate[_T, _P], Awaitable[None]]
+) -> Callable[Concatenate[_T, _P], Coroutine[Any, Any, None]]:
     """Define a wrapper to refresh after."""
 
     async def _async_wrap(self: _T, *args: _P.args, **kwargs: _P.kwargs) -> None:
@@ -31,7 +31,7 @@ def async_refresh_after(
 
 
 class CoordinatedSwidgetEntity(CoordinatorEntity[SwidgetDataUpdateCoordinator]):
-    """Common base class for all coordinated tplink entities."""
+    """Common base class for all coordinated entities."""
 
     def __init__(
         self, device: SwidgetDevice, coordinator: SwidgetDataUpdateCoordinator
@@ -55,6 +55,6 @@ class CoordinatedSwidgetEntity(CoordinatorEntity[SwidgetDataUpdateCoordinator]):
         )
 
     @property
-    def is_on(self) -> bool:
+    def is_on(self) -> bool | None:
         """Return true if switch is on."""
         return bool(self.device.is_on)
