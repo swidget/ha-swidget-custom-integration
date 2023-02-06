@@ -1,5 +1,6 @@
 {
   "domain": "swidget",
+  "version": "1.0.0",
   "name": "Swidget",
   "config_flow": true,
   "documentation": "https://github.com/swidget/ha-swidget",
